@@ -45,31 +45,100 @@
 
         <h2>Table of Contents</h2>
 <ul>
-<li><a href="#jawsdb">Welcome to JawsDB</a></li>
+<li><a href="#jawsdb">Welcome to JawsDB</a><ul>
 <li><a href="#mysql">MySQL</a></li>
+<li><a href="#mariadb">MariaDB</a></li>
+</ul>
+</li>
 <li><a href="#provisioning">Provisioning</a></li>
+<li><a href="#local-setup">Local Setup</a></li>
 <li><a href="#plan-changes">Plan Changes</a></li>
 <li><a href="#deprovisioning">Deprovisioning</a></li>
-<li><a href="#sso-dashboard">SSO Dashboard</a></li>
+<li><a href="#sso-dashboard">SSO Dashboard</a><ul>
 <li><a href="#databites">Databites</a></li>
 <li><a href="#server-metrics">Server Metrics</a></li>
+</ul>
+</li>
 <li><a href="#database-backups">Database Backups</a></li>
-<li><a href="#manual-backups-and-migrations">Manual Backups and Migrations with <code>mysqldump</code></a></li>
+<li><a href="#manual-backups-and-migrations">Manual Backups and Migrations with <code>mysqldump</code></a><ul>
 <li><a href="#manual-backups">Manual Backups with <code>mysqldump</code></a></li>
 <li><a href="#manual-migrations">Manual Migrations</a></li>
+</ul>
+</li>
 <li><a href="#faq">FAQ</a></li>
 <li><a href="#support">Support</a></li>
 </ul>
 <p><a id="jawsdb"></a></p>
 <h1><a href="#jawsdb">Welcome to JawsDB</a></h1>
-<p>JawsDB is a Database-as-a-Service (DBaaS) provider supplying a fully functional, fully managed, relational database for use with your application. Rather than going through the hassle of hosting, configuring, patching, and managing a database, JawsDB provides one-click delivery and management of a relational database in the cloud.</p>
+<p>JawsDB is a MySQL/MariaDB Database-as-a-Service (DBaaS) provider supplying a fully functional, fully managed, relational database for use with your application. Rather than going through the hassle of hosting, configuring, patching, and managing a database, JawsDB provides one-click delivery and management of a relational database in the cloud.</p>
 <p>JawsDB is easy to use and requires no custom coding or libraries to interact with it. Simply select a plan that meets your needs, and we will provide you with the hostname and credentials necessary to dive in and start swimming with the big fish.</p>
 <p><a id="mysql"></a></p>
-<h2><a href="#mysql">MySQL</a></h2>
+<h4><a href="#mysql">MySQL</a></h4>
 <p>MySQL is the world’s most widely used open-source relational database and is trusted by companies such as Google, Facebook, Twitter, and Youtube. Its power, stability, security, and wealth of online documentation has cemented it as a premiere option for start-ups and established businesses alike.</p>
+<p><a id="mariadb"></a></p>
+<h4><a href="#mariadb">MariaDB</a></h4>
+<p>MariaDB is a drop-in replacement and alternative to MySQL which is the world's most widely used open-source relational database and is trusted by companies such as Google, Facebook, Twitter, and Youtube. Its power, stability, security, and wealth of online documentation has cemented it as a premiere option for start-ups and established businesses alike.</p>
 <p><a id="provisioning"></a></p>
 <h2><a href="#provisioning">Provisioning</a></h2>
-<p>JawsDB databases can be created via the <a href="https://jawsdb.com">JawsDB website</a> or via the <a href="https://dashboard.manifold.co">Manifold dashboard</a>. Both methods require a Manifold account, which you can sign up for free <a href="https://dashboard.manifold.co/register">here</a>.</p>
+<h3>Standard provisioning</h3>
+<p>JawsDB Maria can be attached to a Heroku application via the CLI:</p>
+<blockquote>
+<p>callout
+A list of all plans available can be found <a href="https://elements.heroku.com/addons/jawsdb-maria">here</a>.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>$ heroku addons:create jawsdb
+-----&gt; Adding jawsdb-maria to sharp-mountain-4005... <span class="k">done</span>, v18 <span class="o">(</span>free<span class="o">)</span>
+</code></pre></div>
+
+<p>Once JawsDB has been added, a <code>JAWSDB_URL</code> (or <code>JAWSDB_MARIA_URL</code>) setting will be available in the app configuration and will contain the database connection string.</p>
+<blockquote>
+<p>note
+Your database will be created from scratch and will require a few minutes to become fully available. The <code>JAWSDB__URL</code> config variable will contain a placeholder until the database is ready.</p>
+</blockquote>
+<p>This variable can be confirmed at any time using the <code>heroku config:get</code> command.</p>
+<div class="highlight"><pre><span></span><code>$ heroku config:get JAWSDB_URL
+mysql://username:password@hostname:port/default_schema
+</code></pre></div>
+
+<p>After installing JawsDB the application should be configured to fully integrate with the add-on.</p>
+<h3>Provisioning with custom backup/maintenance windows</h3>
+<p>JawsDB instances have a daily backup period and a weekly maintenance period that is chosen randomly from set 8-hour blocks of time. These 8-hour blocks are chosen to minimize impact based on average business operation hours. However, JawsDB also allows users of single-tenant servers (Whitetip plans and higher) to customize these windows when the instances are provisioned using custom command parameters.</p>
+<blockquote>
+<p>callout
+Backup windows must be at least 30 minutes long and must not overlap.</p>
+</blockquote>
+<p>The available command parameters are <code>--bkpwindowstart</code>, <code>--bkpwindowend</code>, <code>--mntwindowstart</code>, and <code>--mntwindowend</code>. You can choose to use only the backup parameters or just the maintenance parameters but they must be used with their twin. For instance, using only <code>--mntwindowstart</code> will not set a custom window. It must be used with its twin, <code>--mntwindowend</code> as well.</p>
+<blockquote>
+<p>callout
+Backup windows are hh24:mi format from 00:00 to 23:59, and maintenance windows are Day:hh24:mi format where 'Day' is one of (Sun|Mon|Tue|Wed|Thu|Fri|Sat). <strong>All times are assumed to be in the UTC Time Zone.</strong></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="n">$</span><span class="w"> </span><span class="n">heroku</span><span class="w"> </span><span class="n">addons</span><span class="o">:</span><span class="n">create</span><span class="w"> </span><span class="n">jawsdb</span><span class="w"> </span><span class="o">--</span><span class="n">bkpwindowstart</span><span class="w"> </span><span class="mo">00</span><span class="o">:</span><span class="mi">30</span><span class="w"> </span><span class="o">--</span><span class="n">bkpwindowend</span><span class="w"> </span><span class="mo">01</span><span class="o">:</span><span class="mo">00</span><span class="w"> </span><span class="o">--</span><span class="n">mntwindowstart</span><span class="w"> </span><span class="n">Tue</span><span class="o">:</span><span class="mi">23</span><span class="o">:</span><span class="mi">30</span><span class="w"> </span><span class="o">--</span><span class="n">mntwindowend</span><span class="w"> </span><span class="n">Wed</span><span class="o">:</span><span class="mo">00</span><span class="o">:</span><span class="mo">00</span><span class="w"></span>
+<span class="o">-----&gt;</span><span class="w"> </span><span class="n">Adding</span><span class="w"> </span><span class="n">jawsdb</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">sharp</span><span class="o">-</span><span class="n">mountain</span><span class="mf">-4005.</span><span class="p">..</span><span class="w"> </span><span class="n">done</span><span class="p">,</span><span class="w"> </span><span class="n">v18</span><span class="w"> </span><span class="p">(</span><span class="n">free</span><span class="p">)</span><span class="w"></span>
+
+<span class="o">&lt;</span><span class="n">a</span><span class="w"> </span><span class="kt">id</span><span class="o">=</span><span class="s">&quot;local-setup&quot;</span><span class="o">&gt;&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="w"></span>
+<span class="cp">## [Local setup](#local-setup)</span>
+
+<span class="cp">### Environment setup</span>
+
+<span class="n">This</span><span class="w"> </span><span class="n">section</span><span class="w"> </span><span class="n">offers</span><span class="w"> </span><span class="n">tips</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">development</span><span class="w"> </span><span class="n">environment</span><span class="p">.</span><span class="w"></span>
+
+<span class="n">After</span><span class="w"> </span><span class="n">provisioning</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">add</span><span class="o">-</span><span class="n">on</span><span class="w"> </span><span class="n">it</span><span class="err">’</span><span class="n">s</span><span class="w"> </span><span class="n">necessary</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">locally</span><span class="w"> </span><span class="n">replicate</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="n">vars</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">development</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">operate</span><span class="w"> </span><span class="n">against</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">service</span><span class="p">.</span><span class="w"></span>
+
+<span class="o">&gt;</span><span class="w"> </span><span class="n">callout</span><span class="w"></span>
+<span class="o">&gt;</span><span class="w"> </span><span class="n">Though</span><span class="w"> </span><span class="n">less</span><span class="w"> </span><span class="n">portable</span><span class="w"> </span><span class="n">it</span><span class="err">’</span><span class="n">s</span><span class="w"> </span><span class="n">also</span><span class="w"> </span><span class="n">possible</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">set</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="err">`</span><span class="n">export</span><span class="w"> </span><span class="n">JAWSDB_URL</span><span class="o">=</span><span class="n">value</span><span class="err">`</span><span class="p">.</span><span class="w"></span>
+
+<span class="n">Use</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">Heroku</span><span class="w"> </span><span class="n">Local</span><span class="w"> </span><span class="n">command</span><span class="o">-</span><span class="n">line</span><span class="w"> </span><span class="n">tool</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">configure</span><span class="p">,</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">manage</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="n">types</span><span class="w"> </span><span class="n">specified</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">app</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="p">[</span><span class="n">Procfile</span><span class="p">](</span><span class="n">procfile</span><span class="p">).</span><span class="w"> </span><span class="n">Heroku</span><span class="w"> </span><span class="n">Local</span><span class="w"> </span><span class="n">reads</span><span class="w"> </span><span class="n">configuration</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="err">`</span><span class="p">.</span><span class="n">env</span><span class="err">`</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="w"> </span><span class="n">To</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="n">all</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">app</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="n">vars</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="err">`</span><span class="n">heroku</span><span class="w"> </span><span class="n">config</span><span class="err">`</span><span class="p">.</span><span class="w"> </span><span class="n">Use</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">following</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">add</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">JAWSDB_URL</span><span class="w"> </span><span class="n">values</span><span class="w"> </span><span class="n">retrieved</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">heroku</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="err">`</span><span class="p">.</span><span class="n">env</span><span class="err">`</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="w"></span>
+
+<span class="err">```</span><span class="n">term</span><span class="w"></span>
+<span class="n">$</span><span class="w"> </span><span class="n">heroku</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">-</span><span class="n">s</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">grep</span><span class="w"> </span><span class="n">JAWSDB_URL</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">.</span><span class="n">env</span><span class="w"></span>
+<span class="n">$</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="p">.</span><span class="n">env</span><span class="w"></span>
+</code></pre></div>
+
+<blockquote>
+<p>warning
+Credentials and other sensitive configuration values should not be committed to source-control. In Git exclude the .env file with: <code>echo .env &gt;&gt; .gitignore</code>.</p>
+</blockquote>
+<p>For more information, see the <a href="https://devcenter.heroku.com/articles/heroku-local">Heroku Local</a> article.</p>
 <p><a id="plan-changes"></a></p>
 <h2><a href="#plan-changes">Plan Changes</a></h2>
 <p>JawsDB provides situational support for automatic upgrades and downgrades between plans. See the below sections for when an up/downgrade may be possible. In all cases where automatic up/downgrading is allowed, your data should be preserved. However, it is always a good idea to backup your database before a plan change. See the section in this documentation entitled <a href="#manual-backups">Manual Backups with <code>mysqldump</code></a> for information on how to do this.</p>
@@ -77,9 +146,6 @@
 <p>Application owners should carefully manage the migration timing to ensure proper application function during the migration process.</p>
 </blockquote>
 <p>Depending on whether a desired plan is a single-tenant or multi-tenant (Shared) plan and whether the storage of the desired plan is greater or less than the current plan, a user may be able to change their plan automatically by following the relevant process flow of the platform where JawsDB was purchased.</p>
-<blockquote>
-<p>Plan changes can be made from your <a href="https://dashboard.manifold.co/">Manifold dashboard</a>. Click edit on the resource you'd like to change, select the new plan that you'd like to change to, and then confirm. If successful you will see a confirmation message.</p>
-</blockquote>
 <p>In order to tell whether an automatic plan-change is supported, please reference the table below keeping in mind the current plan and the desired plan.</p>
 <table>
 <thead>
@@ -107,7 +173,20 @@
 </table>
 <p><a id="deprovisioning"></a></p>
 <h2><a href="#deprovisioning">Deprovisioning</a></h2>
-<p>JawsDB can be removed from your account by going to the <a href="https://dashboard.manifold.co/">Manifold dashboard</a> and clicking to edit a resource, then clicking "deprovision resource".</p>
+<p>JawsDB can be removed via the Heroku Dashboard or the Heroku CLI.</p>
+<blockquote>
+<p>warning
+This will destroy all associated data and cannot be undone!</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>$ heroku addons:destroy jawsdb
+-----&gt; Removing jawsdb from sharp-mountain-4005... <span class="k">done</span>, v20 <span class="o">(</span>free<span class="o">)</span>
+</code></pre></div>
+
+<p>Before removing JawsDB a data backup is advised. JawsDB daily backups are only available while the add-on is attached to your account.</p>
+<blockquote>
+<p>warning
+All addons owned by a Heroku application are automatically removed when the application itself is removed. Please ensure your data is backed up before deleting a Heroku application!</p>
+</blockquote>
 <p><a id="sso-dashboard"></a></p>
 <h2><a href="#sso-dashboard">SSO Dashboard</a></h2>
 <p>JawsDB provides a Dashboard where users can view important information about their Database. This information includes:</p>
@@ -132,7 +211,7 @@
 </blockquote>
 <p><a id="server-metrics"></a></p>
 <h2><a href="#server-metrics">Server Metrics</a></h2>
-<p>Users of single-tenant database plans (currently: Whitetip, Thresher, Tiger, Hammerhead, and Goblin), have access to graphs of important database metrics for CPU, storage, and IO. They can be accessed through the dashboard on the 'Server Status' panel.</p>
+<p>Users of single-tenant database plans (currently: Whitetip plans and higher), have access to graphs of important database metrics for CPU, storage, and IO. They can be accessed through the dashboard on the 'Server Status' panel.</p>
 <p>The metric data points are spaced 5-minutes apart and can be viewed for periods of:</p>
 <ul>
 <li>The last hour</li>
@@ -161,8 +240,8 @@
 <blockquote>
 <p>Warning: Restoring a snapshot replaces the host plan's server entirely. Including its own snapshots.</p>
 </blockquote>
-<p>Example 1: A user purchases a Whitetip instance and needs to revert to a snapshot. The user takes the Snapshot ID of the snapshot they wish to restore to and places it in the <code>Snapshot ID</code> field of the form labeled <code>Restore from Snapshot</code> in their JawsDB Dashboard. They also take the password from their dashboard and place it in that same form's <code>Password</code> field. After clicking the <code>Restore</code> button, the Snapshot is restored onto a 2nd new single-tenant host. After the restore is complete, the user's current server is replaced entirely by the server made from the snapshot. The snapshots originally listed on the Dashboard page are now replaced by those of the newly created server.</p>
-<p>Example 2: A user purchases a Thresher instance and wishes to restore a snapshot but without replacing their current Thresher instance. The user purchases a second plan of at least Thresher value (we'll use Tiger for this illustration), and notes the desired snapshot's <code>Snapshot ID</code> along with the <code>Password</code> of the first Thresher server. The user then navigates to the JawsDB Dashboard of the new blank Tiger server, and enters the noted <code>Snapshot ID</code> and <code>Password</code> into the relevant fields of the form labeled <code>Restore from Snapshot</code> and hits the <code>Restore</code> button. The snapshot is then restored onto a 3rd new single-tenant host. After the restore is complete, the user's newly created Tiger instance is replaced entirely by the server made from the snapshot. The snapshots originally listed on the Tiger plan's Dashboard page are now replaced by those of the newly created server.</p>
+<p>Example 1: A user purchases a Whitetip instance and needs to revert to a snapshot. The user notes the Snapshot ID of the snapshot they wish to restore to and places it in the <code>Snapshot ID</code> field of the form labeled <code>Restore from Snapshot</code> in their JawsDB Dashboard. They also take the password from their dashboard and place it in that same form's <code>Password</code> field. After clicking the <code>Restore</code> button, the Snapshot is restored onto a 2nd new single-tenant host. After the restore is complete, the user's current server is replaced entirely by the server made from the snapshot. The snapshots originally listed on the Dashboard page are now replaced by those of the newly created server.</p>
+<p>Example 2: A user purchases a Thresher instance and wishes to restore a snapshot but without replacing their current Thresher instance. The user purchases a second plan of at least Thresher value (we'll use Tiger for this illustration), and notes the desired snapshot's <code>Snapshot ID</code> along with the <code>Password</code> of the first Thresher server. The user then navigates to the JawsDB Dashboard of the new blank Tiger server, and enters the noted <code>Snapshot ID</code> and <code>Password</code> of the Thresher instance into the relevant fields of the form labeled <code>Restore from Snapshot</code> and hits the <code>Restore</code> button. The snapshot is then restored onto a 3rd new single-tenant host. After the restore is complete, the user's newly created Tiger instance is replaced entirely by the server made from the snapshot. The snapshots originally listed on the Tiger plan's Dashboard page are now replaced by those of the newly created server.</p>
 <p>Customers are also free to take and keep their own backups using <code>mysqldump</code> or some other service or utility.</p>
 <p>Below we provide a quick primer on how to use <code>mysqldump</code> to create and restore backups.</p>
 <p><a id="manual-backups-and-migrations"></a></p>
@@ -175,12 +254,12 @@
 
 <p><code>username</code>, <code>password</code>, <code>hostname</code>, <code>port</code>, and <code>database</code> will be referenced in the following sections.</p>
 <blockquote>
-<p>The <code>mysqldump</code> tutorials below are simplistic and general. The full range of options and configurations that <code>mysqldump</code> supports can be seen <a href="https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html">here</a> and in the tool's own <code>man</code> pages.</p>
+<p>The <code>mysqldump</code> tutorials below are simplistic and general. The full range of options and configurations that <code>mysqldump</code> supports can be seen <a href="https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html">here</a> and in the tool's own <code>man</code> pages.</p>
 </blockquote>
 <p><a id="manual-backups"></a></p>
-<h4><a href="#manual-backups">Manual Backups with <code>mysqldump</code></a></h4>
+<h4><a href="#manual-backups">Manual Backups</a></h4>
 <p>The following command will backup the specified database into a local file called <code>backup.sql</code></p>
-<div class="highlight"><pre><span></span><code>mysqldump -h hostname -u username -ppassword database &gt; backup.sql
+<div class="highlight"><pre><span></span><code>mysqldump --no-tablespaces -h hostname -u username -ppassword database &gt; backup.sql
 </code></pre></div>
 
 <blockquote>
@@ -264,15 +343,17 @@
 </tr>
 </tbody>
 </table>
-<h3>How do I access my database backups?</h3>
+<h3>How do I access my database backups on a shared plan?</h3>
 <p>JawsDB backups are in an Amazon-proprietary snapshot format and must be restored by the JawsDB team. Please see the section entitled <a href="#database-backups">Database Backups</a> for more information.</p>
 <h3>Why do I get an error when attempting to change my plan?</h3>
 <p>In some specific situations, changing plan requires a manual migration. Please check the section entitled <a href="#plan-changes">Plan Changes</a> to find out whether this applies to your particular situation.</p>
 <h3>Does JawsDB support Encryption at Rest?</h3>
-<p>Encryption at Rest (EAR) is a new feature applying transparent AES-256 encryption to the underlying data storage of a JawsDB database and is available on a subset of our plans. Check the desired plan's description to see if EAR is supported.</p>
+<p>Encryption at Rest (EAR) is a new feature applying transparent AES-256 encryption to the underlying data storage of a JawsDB database and is available on a subset of our plans. It does not encrypt your data in transit, but only when it is at rest on the server. SSL should be used for encrypting traffic in transit.</p>
+<p>Check the desired plan's description to see if EAR is supported.</p>
 <p><a id="support"></a></p>
 <h2><a href="#support">Support</a></h2>
-<p>Account support and runtime issues should be sent to JawsDB's support <a href="mailto:support@jawsdb.com">email address</a>.</p>
+<p>Heroku Account support and application runtime issues should be sent via the <a href="https://devcenter.heroku.com/articles/support-channels">Heroku Support Channels</a>.</p>
+<p>Database specific questions and issues can be sent to JawsDB's support <a href="mailto:support@jawsdb.com">email address</a>.</p>
 <p>For news, non-critical questions, and feedback, check out the @jawsdb <a href="https://twitter.com/jawsdb">Twitter account</a></p>
 
     </div>
