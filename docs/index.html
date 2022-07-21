@@ -78,6 +78,10 @@
 <p><a id="mariadb"></a></p>
 <h4><a href="#mariadb">MariaDB</a></h4>
 <p>MariaDB is a drop-in replacement and alternative to MySQL which is the world's most widely used open-source relational database and is trusted by companies such as Google, Facebook, Twitter, and Youtube. Its power, stability, security, and wealth of online documentation has cemented it as a premiere option for start-ups and established businesses alike.</p>
+<blockquote>
+<p>note
+Whenever this document includes <code>JAWSDB_URL</code> or <code>jawsdb</code> for code or terminal commands, MariaDB users would use <code>JAWSDB_MARIA_URL</code> and <code>jawsdb-maria</code>, respectively.</p>
+</blockquote>
 <p><a id="provisioning"></a></p>
 <h2><a href="#provisioning">Provisioning</a></h2>
 <h3>Standard provisioning</h3>
@@ -90,10 +94,10 @@ A list of all plans available can be found <a href="https://elements.heroku.com/
 -----&gt; Adding jawsdb to sharp-mountain-4005... <span class="k">done</span>, v18 <span class="o">(</span>free<span class="o">)</span>
 </code></pre></div>
 
-<p>Once JawsDB has been added, a <code>JAWSDB_URL</code> (or <code>JAWSDB_MARIA_URL</code>) setting will be available in the app configuration and will contain the database connection string.</p>
+<p>Once JawsDB has been added, a <code>JAWSDB_URL</code> setting will be available in the app configuration and will contain the database connection string.</p>
 <blockquote>
 <p>note
-Your database will be created from scratch and will require a few minutes to become fully available. The <code>JAWSDB__URL</code> config variable will contain a placeholder until the database is ready.</p>
+Your database will be created from scratch and will require a few minutes to become fully available. The <code>JAWSDB_URL</code> config variable will contain a placeholder until the database is ready.</p>
 </blockquote>
 <p>This variable can be confirmed at any time using the <code>heroku config:get</code> command.</p>
 <div class="highlight"><pre><span></span><code>$ heroku config:get JAWSDB_URL
