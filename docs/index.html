@@ -81,13 +81,13 @@
 <p><a id="provisioning"></a></p>
 <h2><a href="#provisioning">Provisioning</a></h2>
 <h3>Standard provisioning</h3>
-<p>JawsDB Maria can be attached to a Heroku application via the CLI:</p>
+<p>JawsDB can be attached to a Heroku application via the CLI:</p>
 <blockquote>
 <p>callout
-A list of all plans available can be found <a href="https://elements.heroku.com/addons/jawsdb-maria">here</a>.</p>
+A list of all plans available can be found <a href="https://elements.heroku.com/addons/jawsdb">here</a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code>$ heroku addons:create jawsdb
------&gt; Adding jawsdb-maria to sharp-mountain-4005... <span class="k">done</span>, v18 <span class="o">(</span>free<span class="o">)</span>
+-----&gt; Adding jawsdb to sharp-mountain-4005... <span class="k">done</span>, v18 <span class="o">(</span>free<span class="o">)</span>
 </code></pre></div>
 
 <p>Once JawsDB has been added, a <code>JAWSDB_URL</code> (or <code>JAWSDB_MARIA_URL</code>) setting will be available in the app configuration and will contain the database connection string.</p>
