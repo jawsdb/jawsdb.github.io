@@ -42,26 +42,20 @@
 
         <h2>Table of Contents</h2>
 <ul>
-<li><a href="#jawsdb">Welcome to JawsDB</a><ul>
+<li><a href="#jawsdb">Welcome to JawsDB</a></li>
 <li><a href="#mysql">MySQL</a></li>
 <li><a href="#mariadb">MariaDB</a></li>
-</ul>
-</li>
 <li><a href="#provisioning">Provisioning</a></li>
 <li><a href="#local-setup">Local Setup</a></li>
 <li><a href="#plan-changes">Plan Changes</a></li>
 <li><a href="#deprovisioning">Deprovisioning</a></li>
-<li><a href="#sso-dashboard">SSO Dashboard</a><ul>
+<li><a href="#sso-dashboard">SSO Dashboard</a></li>
 <li><a href="#databites">Databites</a></li>
 <li><a href="#server-metrics">Server Metrics</a></li>
-</ul>
-</li>
 <li><a href="#database-backups">Database Backups</a></li>
-<li><a href="#manual-backups-and-migrations">Manual Backups and Migrations with <code>mysqldump</code></a><ul>
+<li><a href="#manual-backups-and-migrations">Manual Backups and Migrations with <code>mysqldump</code></a></li>
 <li><a href="#manual-backups">Manual Backups with <code>mysqldump</code></a></li>
 <li><a href="#manual-migrations">Manual Migrations</a></li>
-</ul>
-</li>
 <li><a href="#faq">FAQ</a></li>
 <li><a href="#support">Support</a></li>
 </ul>
@@ -260,12 +254,11 @@ All addons owned by a Heroku application are automatically removed when the appl
 <p><a id="manual-backups"></a></p>
 <h4><a href="#manual-backups">Manual Backups</a></h4>
 <p>The following command will backup the specified database into a local file called <code>backup.sql</code></p>
-<div class="highlight"><pre><span></span><code>mysqldump --no-tablespaces -h hostname -u username -ppassword database &gt; backup.sql
+<div class="highlight"><pre><span></span><code>mysqldump -h hostname -u username -ppassword --no-tablespaces --set-gtid-purged=OFF database &gt; backup.sql
 </code></pre></div>
 
 <blockquote>
 <p>Note There is no space between the <code>-p</code> flag and <code>password</code></p>
-<p>If using MySQL v.8, you may need to add --column-statistics=0 to your mysqldump command</p>
 </blockquote>
 <p><a id="manual-migrations"></a></p>
 <h4><a href="#manual-migrations">Manual Migrations</a></h4>
@@ -315,9 +308,6 @@ All addons owned by a Heroku application are automatically removed when the appl
 
 <h3>I am getting an error saying I have exceeded the 'max_questions’ resource. What is that?</h3>
 <p>The 'max_questions’ value is a limit that is placed on shared plan accounts to help preserve computing power for other shared plan users on the same server. It is essentially a limit on the number of queries that can be executed from that account in an hour. After 1 hour of reaching the limit, the limit will be reset and queries can again be executed.</p>
-<blockquote>
-<p>HINT: Cached queries do not count against the query limit of 'max_questions’. Taking advantage of the cache is a good way around this limit.</p>
-</blockquote>
 <table>
 <thead>
 <tr>
@@ -347,9 +337,9 @@ All addons owned by a Heroku application are automatically removed when the appl
 <h3>How do I access my database backups on a shared plan?</h3>
 <p>JawsDB backups are in an Amazon-proprietary snapshot format and must be restored by the JawsDB team. Please see the section entitled <a href="#database-backups">Database Backups</a> for more information.</p>
 <h3>Why do I get an error when attempting to change my plan?</h3>
-<p>In some specific situations, changing plan requires a manual migration. Please check the section entitled <a href="#plan-changes">Plan Changes</a> to find out whether this applies to your particular situation.</p>
+<p>When switching between shared plans (Kitefin Leopard, Blacktip) and single-tenant plans (Whitetip+), changing plan requires a manual migration because the data needs transfer to another server. Please check the section entitled <a href="#plan-changes">Plan Changes</a> to find out whether this applies to your particular situation.</p>
 <h3>Does JawsDB support Encryption at Rest?</h3>
-<p>Encryption at Rest (EAR) is a new feature applying transparent AES-256 encryption to the underlying data storage of a JawsDB database and is available on a subset of our plans. It does not encrypt your data in transit, but only when it is at rest on the server. SSL should be used for encrypting traffic in transit.</p>
+<p>Encryption at Rest (EAR) is a feature applying transparent AES-256 encryption to the underlying data storage of a JawsDB database and is available on a subset of our plans. It does not encrypt your data in transit, but only when it is at rest on the server. SSL should be used for encrypting traffic in transit.</p>
 <p>Check the desired plan's description to see if EAR is supported.</p>
 <p><a id="support"></a></p>
 <h2><a href="#support">Support</a></h2>
