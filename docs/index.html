@@ -136,36 +136,24 @@ Credentials and other sensitive configuration values should not be committed to 
 <p>For more information, see the <a href="https://devcenter.heroku.com/articles/heroku-local">Heroku Local</a> article.</p>
 <p><a id="plan-changes"></a></p>
 <h2><a href="#plan-changes">Plan Changes</a></h2>
-<p>JawsDB provides situational support for automatic upgrades and downgrades between plans. See the below sections for when an up/downgrade may be possible. In all cases where automatic up/downgrading is allowed, your data should be preserved. However, it is always a good idea to backup your database before a plan change. See the section in this documentation entitled <a href="#manual-backups">Manual Backups with <code>mysqldump</code></a> for information on how to do this.</p>
+<p>Most of the time, users can upgrade their JawsDB database in-place to a different plan. However, there are two notable exceptions where a manual migration of data must be performed, moving data from their existing JawsDB database to a new JawsDB database created from scratch. Those two scenarios are listed below.</p>
+<ol>
+<li>Upgrades from a 'Shared' plan (such as Leopard, or Blacktip) to a single-tenant plan (such as Whitetip or greater). Because shared plans exist in multi-tenant environments, the server they are on cannot be converted to a single-tenant environment, and the complex permutations of user data make it impractical to try and move user data to a single-tenant server via automated process.</li>
+<li>Downgrades from a single-tenant server plan to any other plan of lesser storage size. For liability reasons, our vendor disallows resizing database server hard disk space which could risk data truncation and/or corruption. For this reason, any downgrades in server specs (CPU, RAM, etc) can only be done in-place to plans of the same hard disk storage size. Custom plans can be created by request.</li>
+</ol>
+<p>The process for manually migrating data from PlanA to PlanB could look like the following:</p>
+<ol>
+<li>User provisions new JawsDB database of type PlanB</li>
+<li>User backs up their data in their JawsDB PlanA database.</li>
+<li>User loads the backed-up data onto their new PlanB database.</li>
+<li>User tests PlanB database to confirm the data is present.</li>
+<li>User points their application at PlanB database, away from PlanA.</li>
+<li>Once user is satisfied with the migration, PlanA database is deleted.</li>
+</ol>
+<p>In all cases where automatic up/downgrading in-place is allowed, your data will be preserved and no migration is necessary. However, it is always a good idea to backup your database before a plan change. See the section in this documentation entitled <a href="#manual-backups">Manual Backups with <code>mysqldump</code></a> for information on how to do this.</p>
 <blockquote>
 <p>Application owners should carefully manage the migration timing to ensure proper application function during the migration process.</p>
 </blockquote>
-<p>Depending on whether a desired plan is a single-tenant or multi-tenant (Shared) plan and whether the storage of the desired plan is greater or less than the current plan, a user may be able to change their plan automatically by following the relevant process flow of the platform where JawsDB was purchased.</p>
-<p>In order to tell whether an automatic plan-change is supported, please reference the table below keeping in mind the current plan and the desired plan.</p>
-<table>
-<thead>
-<tr>
-<th>PLAN</th>
-<th style="text-align: center;">To Multi-tenant</th>
-<th style="text-align: center;">To Single-tenant (storage &lt; source storage)</th>
-<th style="text-align: center;">To Single-tenant (storage &gt;= source storage)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>From Multi-tenant</strong></td>
-<td style="text-align: center;"><strong>Automatic</strong></td>
-<td style="text-align: center;">Manual</td>
-<td style="text-align: center;">Manual</td>
-</tr>
-<tr>
-<td><strong>From Single-tenant</strong></td>
-<td style="text-align: center;">Manual</td>
-<td style="text-align: center;">Manual</td>
-<td style="text-align: center;"><strong>Automatic</strong></td>
-</tr>
-</tbody>
-</table>
 <p><a id="deprovisioning"></a></p>
 <h2><a href="#deprovisioning">Deprovisioning</a></h2>
 <p>JawsDB can be removed via the Heroku Dashboard or the Heroku CLI.</p>
